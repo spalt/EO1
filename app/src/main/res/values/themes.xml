@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.EO1" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+<!--    <style name="Theme.EO1.NoActionBar">-->
+<!--        <item name="windowActionBar">false</item>-->
+<!--        <item name="windowNoTitle">true</item>-->
+<!--    </style>-->
+
+<!--    <style name="Theme.EO1.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />-->
+<!--    <style name="Theme.EO1.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />-->
+</resources>
