@@ -37,6 +37,10 @@ class FlickrPhoto {
     @SerializedName("media")
     private String media;
 
+    @SerializedName("url_o")
+    private String url_o;
+
+
     public String getId() {
         return id;
     }
@@ -55,5 +59,9 @@ class FlickrPhoto {
 
     public String getMedia() {
         return media;
+    }
+
+    public String getUrlO() {
+        return url_o;
     }
 }

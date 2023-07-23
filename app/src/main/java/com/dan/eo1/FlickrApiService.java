@@ -10,7 +10,9 @@ public interface FlickrApiService {
     Call<FlickrApiResponse> searchPhotos(
             @Query("api_key") String apiKey,
             @Query("text") String searchText,
-            @Query("per_page") int perPage
+            @Query("per_page") int perPage,
+            @Query("tags") String tags,
+            @Query("extras") String extras
     );
 
     @GET("?method=flickr.people.getPublicPhotos&format=json&nojsoncallback=1")
