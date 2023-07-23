@@ -23,6 +23,18 @@
 - The first time the E01 is run you will need to specify the information above.  Click OK to save and continue.
 - You can now unplug your mouse and keyboard and hang your E01 back on the wall!
 
+### New in 0.0.2
+
+- Fixed: low resolution images
+- New: Specify slideshow interval in minutes
+- New: Specify showing your gallery, public gallery (items tagged "ElectricObjectLives"), or specific tag
+- New: auto-brightness based on light sensor reading
+- New: quiet hours (screen will dim and not display images during this period)
+- New: Top button will dim/un-dim screen
+- New: Space will advance slideshow manually
+- New: C opens Config screen
+- More goodies coming soon :)
+
 ### Art/Contact
 
 - I need more art!  Do you have any?  
