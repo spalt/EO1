@@ -27,7 +27,7 @@
 
 - Fixed: low resolution images
 - New: Specify slideshow interval in minutes
-- New: Specify showing your gallery, public gallery (items tagged "ElectricObjectLives"), or specific tag
+- New: Specify showing your gallery, public gallery (items tagged "ElectricObjectsLives"), or specific tag
 - New: auto-brightness based on light sensor reading
 - New: quiet hours (screen will dim and not display images during this period)
 - New: Top button will dim/un-dim screen
