@@ -26,7 +26,8 @@
 ### New in 0.0.3
 
 - New: "Partner App" (for Android) runs on your phone or mobile device and allows you to push images or video directly from the <A href="https://play.google.com/store/apps/details?id=com.flickr.android&hl=en_US&gl=US">Flickr Android App</a> using the share icon, assuming you are running on the same network as your EO1 device.  Running the Partner App from the Start menu of your phone allows you to skip to the next item in the current slideshow or resume the slideshow after sharing an individual item.  You can also update the current Tag (original Tag will be restored next time the device restarts).  You must allow Unknown Sources to install this app and point your phones web browser to https://github.com/spalt/EO1/releases/download/0.0.3/EO1-Partner.apk (I may publish this to the Play store in the near furture).
-- Updated: Changed Flickr API to use the highest resolution image (if allowed) and video. 
+- Updated: Images pushed from the "Partner app" will be displayed using the "Center Inside" cropping strategy
+- Updated: Changed Flickr API to use the highest resolution image (if allowed) and video.
 
 ### New in 0.0.2
 
