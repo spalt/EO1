@@ -38,8 +38,8 @@
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Slideshow options:"
         android:layout_marginTop="20sp"
+        android:text="Slideshow options:"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <RadioGroup

@@ -8,6 +8,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -69,10 +71,28 @@ public class MyMessageService extends Service {
                 @Override
                 public void run() {
                     Toast.makeText(MyMessageService.this, message, Toast.LENGTH_SHORT).show();
+
+                    Intent intent = new Intent("MSG_RECEIVED");
+                    String type = "";
+                    if (message.startsWith("image,") || message.startsWith("video,")) {
+                        type = message.substring(0, ("image,".length()) - 1);
+
+                        intent.putExtra("url", message.replace("image,", "").replace("video,", ""));
+                        intent.putExtra("type", type);
+                    }
+
+                    if (message.startsWith("resume")) {
+                        intent.putExtra("type", "resume");
+                    }
+
+                    if (message.startsWith("tag")) {
+                        intent.putExtra("type", "tag");
+                        intent.putExtra("tag", message.replace("tag,",""));
+                    }
+
+                    LocalBroadcastManager.getInstance(MyMessageService.this).sendBroadcast(intent);
                 }
             });
-
-            // Close the socket after handling the message
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();

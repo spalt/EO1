@@ -12,6 +12,16 @@ public class FlickrApiResponse {
     }
 }
 
+class FlickrPhotoInfoApiResponse {
+    @SerializedName("photo")
+    private FlickrPhoto photo;
+
+    public FlickrPhoto getPhoto() {
+        return photo;
+    }
+}
+
+
 class FlickrPhotos {
     @SerializedName("photo")
     private List<FlickrPhoto> photoList;
@@ -40,6 +50,9 @@ class FlickrPhoto {
     @SerializedName("url_o")
     private String url_o;
 
+    @SerializedName("originalsecret")
+    private String originalsecret;
+
 
     public String getId() {
         return id;
@@ -64,4 +77,6 @@ class FlickrPhoto {
     public String getUrlO() {
         return url_o;
     }
+
+    public String getOriginalSecret() { return originalsecret; }
 }

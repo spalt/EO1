@@ -23,4 +23,10 @@ public interface FlickrApiService {
             @Query("extras") String extras
     );
 
+    @GET("?method=flickr.photos.getInfo&format=json&nojsoncallback=1")
+    Call<FlickrPhotoInfoApiResponse> getInfo(
+            @Query("api_key") String apiKey,
+            @Query("photo_id") String photoId
+    );
+
 }
