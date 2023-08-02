@@ -29,4 +29,10 @@ public interface FlickrApiService {
             @Query("photo_id") String photoId
     );
 
+    @GET("?method=flickr.photos.getSizes&format=json&nojsoncallback=1")
+    Call<FlickrGetSizesResponse> getSizes(
+            @Query("api_key") String apiKey,
+            @Query("photo_id") String photoId
+    );
+
 }

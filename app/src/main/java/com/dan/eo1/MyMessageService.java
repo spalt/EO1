@@ -70,14 +70,12 @@ public class MyMessageService extends Service {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(MyMessageService.this, message, Toast.LENGTH_SHORT).show();
-
                     Intent intent = new Intent("MSG_RECEIVED");
                     String type = "";
                     if (message.startsWith("image,") || message.startsWith("video,")) {
                         type = message.substring(0, ("image,".length()) - 1);
 
-                        intent.putExtra("url", message.replace("image,", "").replace("video,", ""));
+                        intent.putExtra("imageid", message.replace("image,", "").replace("video,", ""));
                         intent.putExtra("type", type);
                     }
 

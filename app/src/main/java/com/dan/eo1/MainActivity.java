@@ -14,7 +14,6 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,7 +64,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    public int per_page = 50; //500 max
+    public int per_page = 500; //500 max
     public int interval = 5;
     public int tempid = 0;
     private int currentPosition = 0;
@@ -87,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean slideshowpaused = false;
     private ProgressBar progress;
     boolean screenon = true;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (!userid.isEmpty() && !apikey.isEmpty()) {
             loadImagesFromFlickr();
-            startSlideshow();
         }
     }
 
@@ -171,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
             progress.setVisibility(View.VISIBLE);
             imageView.setVisibility(View.INVISIBLE);
             videoView.setVisibility(View.INVISIBLE);
+            slideshowpaused = false;
             showNextImage();
         }
 
@@ -298,7 +296,6 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Saved!  Hit 'C' to come back here later.", Toast.LENGTH_SHORT).show();
 
                             loadImagesFromFlickr();
-                            startSlideshow();
                         } else {
                             Toast.makeText(MainActivity.this, "Please enter User ID and API Key", Toast.LENGTH_SHORT).show();
                         }
@@ -316,12 +313,16 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void startSlideshow() {
+        handler.removeCallbacksAndMessages(null);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 Calendar calendar = Calendar.getInstance();
                 int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
-                if (currentHour >= startQuietHour && currentHour <= endQuietHour) {
+                int normalizedStart = (startQuietHour + 24) % 24;
+                int normalizedEnd = (endQuietHour + 24) % 24;
+                if ((currentHour >= normalizedStart && currentHour < normalizedEnd) ||
+                   (normalizedStart > normalizedEnd && (currentHour >= normalizedStart || currentHour < normalizedEnd))) {
                     if (!isInQuietHours) {
                         //entering quiet, turn off screen
                         WindowManager.LayoutParams params = getWindow().getAttributes();
@@ -332,12 +333,6 @@ public class MainActivity extends AppCompatActivity {
 
                         isInQuietHours = true;
                     }
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            startSlideshow();
-                        }
-                    }, 60000);
                 } else {
                     if (isInQuietHours) {
                         //exiting quiet, turn on screen
@@ -348,10 +343,12 @@ public class MainActivity extends AppCompatActivity {
                         isInQuietHours = false;
                     }
                     showNextImage();
-                    handler.postDelayed(this, 60000 * interval);
                 }
+                handler.postDelayed(this, 60000 * interval);
             }
         }, 60000 * interval);
+
+        showNextImage();
     }
 
     private void showNextImage() {
@@ -360,37 +357,50 @@ public class MainActivity extends AppCompatActivity {
                 loadImagesFromFlickr(); return;
             }
 
-            if (!flickrPhotos.get(currentPosition).getMedia().equals("video")) {
-                videoView.setVisibility(View.INVISIBLE);
-                imageView.setVisibility(View.VISIBLE);
+            try {
+                String mediatype = flickrPhotos.get(currentPosition).getMedia();
 
-                if (flickrPhotos.get(currentPosition).getUrlO() == null) {
-                    currentPosition++;
-                    showNextImage();
-                    return;
+                if (!mediatype.equals("video")) {
+                    videoView.setVisibility(View.INVISIBLE);
+                    imageView.setVisibility(View.VISIBLE);
+
+                    if (flickrPhotos.get(currentPosition).getUrlO() == null) {
+                        currentPosition++;
+                        showNextImage();
+                        return;
+                    } else {
+                        String imageUrl = flickrPhotos.get(currentPosition).getUrlO().toString().replace("_o", "_k");
+                        Picasso.get().load(imageUrl).fit().centerInside().into(imageView); //Picasso.get().load(imageUrl).fit().centerCrop().into(imageView);
+                        progress.setVisibility(View.INVISIBLE);
+                    }
+
                 } else {
-                    String imageUrl = flickrPhotos.get(currentPosition).getUrlO().toString().replace("_o", "_k");
-                    Picasso.get().load(imageUrl).fit().into(imageView); //Picasso.get().load(imageUrl).fit().centerCrop().into(imageView);
-                    progress.setVisibility(View.INVISIBLE);
+                    imageView.setVisibility(View.INVISIBLE);
+
+                    MediaController mediaController = new MediaController(this);
+                    mediaController.setAnchorView(videoView);
+                    mediaController.setVisibility(View.INVISIBLE);
+                    videoView.setMediaController(mediaController);
+
+                    String url = "";
+                    if (flickrPhotos.get(currentPosition).getOriginalSecret() == null)
+                        url = "https://www.flickr.com/photos/" + userid + "/" + flickrPhotos.get(currentPosition).getId() + "/play/720p/" + flickrPhotos.get(currentPosition).getSecret();
+                    else
+                        url = "https://www.flickr.com/photos/" + userid + "/" + flickrPhotos.get(currentPosition).getId() + "/play/orig/" + flickrPhotos.get(currentPosition).getOriginalSecret();
+
+                    new DownloadVideoTask().execute(url);
                 }
-
-            } else {
-                imageView.setVisibility(View.INVISIBLE);
-
-                MediaController mediaController = new MediaController(this);
-                mediaController.setAnchorView(videoView);
-                mediaController.setVisibility(View.INVISIBLE);
-                videoView.setMediaController(mediaController);
-
-                String url = "";
-                if (flickrPhotos.get(currentPosition).getOriginalSecret() == null)
-                    url = "https://www.flickr.com/photos/" + userid + "/" + flickrPhotos.get(currentPosition).getId() + "/play/720p/" + flickrPhotos.get(currentPosition).getSecret();
-                else
-                    url = "https://www.flickr.com/photos/" + userid + "/" + flickrPhotos.get(currentPosition).getId() + "/play/orig/" + flickrPhotos.get(currentPosition).getOriginalSecret();
-
-                new DownloadVideoTask().execute(url);
+                currentPosition++;
+            } catch (Exception ex) {
+                progress.setVisibility(View.VISIBLE);
+                Toast.makeText(MainActivity.this, "shownextimage err > " + ex.getMessage().toString(), Toast.LENGTH_SHORT).show();
+                new android.os.Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        showNextImage();
+                    }
+                }, 10000);
             }
-            currentPosition++;
         }
     }
 
@@ -424,13 +434,18 @@ public class MainActivity extends AppCompatActivity {
                     if (response.isSuccessful()) {
                         FlickrApiResponse apiResponse = response.body();
                         if (apiResponse != null) {
-                            flickrPhotos = apiResponse.getPhotos().getPhotoList();
-
-                            currentPosition = 0;
-
-                            Collections.shuffle(flickrPhotos);
-
-                            showNextImage();
+                            try {
+                                flickrPhotos = apiResponse.getPhotos().getPhotoList();
+                                if (flickrPhotos.size() == 0) {
+                                    customTag = ""; loadImagesFromFlickr(); return;
+                                }
+                                currentPosition = 0;
+                                Collections.shuffle(flickrPhotos);
+                                startSlideshow();
+                            } catch (Exception ex) {
+                                Toast.makeText(MainActivity.this, "Flickr failure, check API key", Toast.LENGTH_SHORT).show();
+                                showSetupDialog();
+                            }
                         }
                     }
                 }
@@ -535,7 +550,6 @@ public class MainActivity extends AppCompatActivity {
 
                 return tempFile.getPath();
             } catch (IOException e) {
-                showNextImage();
                 return "ERR: " + e.getMessage();
             }
         }
@@ -558,15 +572,15 @@ public class MainActivity extends AppCompatActivity {
                 videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                     @Override
                     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-                        Toast.makeText(MainActivity.this, "ERR> ", Toast.LENGTH_SHORT).show();
-
+                        progress.setVisibility(View.VISIBLE);
+                        Toast.makeText(MainActivity.this, "mediaplayer ERR> ", Toast.LENGTH_SHORT).show();
                         showNextImage();
                         return true;
                     }
                 });
             } else {
+                progress.setVisibility(View.VISIBLE);
                 Toast.makeText(MainActivity.this, "ERR> " + file, Toast.LENGTH_SHORT).show();
-
             }
         }
     }
@@ -576,7 +590,6 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction() != null) {
                 if (intent.getAction().equals("MSG_RECEIVED")) {
-                    String url = intent.getStringExtra("url");
                     String type = intent.getStringExtra("type");
 
                     progress.setVisibility(View.VISIBLE);
@@ -592,58 +605,65 @@ public class MainActivity extends AppCompatActivity {
                         getWindow().setAttributes(params);
                     }
 
-                    if (type.equals("image")) {
-                        if (url.startsWith("https")) {
-                            imageView.setVisibility(View.VISIBLE);
-                            videoView.setVisibility(View.INVISIBLE);
-                            progress.setVisibility(View.INVISIBLE);
-                            Picasso.get().load(url).fit().centerInside().into(imageView);
-
-                        } else {
-                            String imageid = url.replace("content://com.flickr.android.share.provider/image/", "");
-                            imageid = imageid.substring(0, imageid.indexOf("/"));
-
-                            Retrofit retrofit = new Retrofit.Builder()
+                    if (type.equals("image") || type.equals("video")) {
+                        Retrofit retrofit = new Retrofit.Builder()
                                     .baseUrl("https://api.flickr.com/services/rest/")
                                     .addConverterFactory(GsonConverterFactory.create())
                                     .client(new okhttp3.OkHttpClient())
                                     .build();
-
-                            FlickrApiService apiService = retrofit.create(FlickrApiService.class);
-                            Call<FlickrPhotoInfoApiResponse> call = apiService.getInfo(apikey, imageid);
-                            call.enqueue(new Callback<FlickrPhotoInfoApiResponse>() {
+                        FlickrApiService apiService = retrofit.create(FlickrApiService.class);
+                            Call<FlickrGetSizesResponse> call = apiService.getSizes(apikey, intent.getStringExtra("imageid"));
+                            call.enqueue(new Callback<FlickrGetSizesResponse>() {
                                 @Override
-                                public void onResponse(Call<FlickrPhotoInfoApiResponse> call, Response<FlickrPhotoInfoApiResponse> response) {
+                                public void onResponse(Call<FlickrGetSizesResponse> call, Response<FlickrGetSizesResponse> response) {
                                     if (response.isSuccessful()) {
-                                        FlickrPhoto photo = response.body().getPhoto();
-                                        String url = "";
-                                        if (photo.getOriginalSecret() != null)
-                                            url = "https://live.staticflickr.com/" + photo.getServer() + "/" + photo.getId() + "_" + photo.getOriginalSecret() + "_k.png";
-                                        else
-                                            url = "https://live.staticflickr.com/" + photo.getServer() + "/" + photo.getId() + "_" + photo.getSecret() + "_b.png";
-
-                                        imageView.setVisibility(View.VISIBLE);
-                                        videoView.setVisibility(View.INVISIBLE);
-                                        progress.setVisibility(View.INVISIBLE);
-                                        Picasso.get().load(url).fit().centerInside().into(imageView);
+                                        FlickrGetSizesResponse flickrSizesResponse = response.body();
+                                        if (flickrSizesResponse != null) {
+                                            List<FlickrGetSizesResponse.FlickrImageSize> imageSizes = flickrSizesResponse.getSizes().getImageSizes();
+                                            for (FlickrGetSizesResponse.FlickrImageSize size : imageSizes) {
+                                                String label = size.getLabel();
+                                                String imageUrl = size.getSourceUrl();
+                                                if (type.equals("image") && label.equals("Original")) {
+                                                    loadImage(imageUrl);
+                                                    return;
+                                                }
+                                                if (type.equals("video") && label.equals("720p")) {
+                                                    loadVideo(imageUrl);
+                                                    return;
+                                                }
+                                            }
+                                            //couldn't find 720p, get 360p
+                                            for (FlickrGetSizesResponse.FlickrImageSize size : imageSizes) {
+                                                String label = size.getLabel();
+                                                if (type.equals("video") && label.equals("360p")) {
+                                                    loadVideo(size.getSourceUrl());
+                                                    return;
+                                                }
+                                            }
+                                            //couldn't find original image, find Large or Large 1600
+                                            if (type.equals("image")) {
+                                                for (int i= imageSizes.size() - 1; i >= 0; i--) {
+                                                    String label = imageSizes.get(i).getLabel();
+                                                    if (label.equals("Large") || label.equals("Large 1600")) {
+                                                        loadImage(imageSizes.get(i).getSourceUrl());
+                                                        return;
+                                                    }
+                                                }
+                                            }
+                                            Toast.makeText(MainActivity.this, "No source found.", Toast.LENGTH_SHORT).show();
+                                            slideshowpaused = false;
+                                            showNextImage();
+                                        }
                                     }
                                 }
 
                                 @Override
-                                public void onFailure(Call<FlickrPhotoInfoApiResponse> call, Throwable t) {
+                                public void onFailure(Call<FlickrGetSizesResponse> call, Throwable t) {
                                     Toast.makeText(MainActivity.this, "Flickr failure", Toast.LENGTH_SHORT).show();
+                                    slideshowpaused = false;
+                                    showNextImage();
                                 }
                             });
-                        }
-
-                    } else if (type.equals("video")) {
-                        MediaController mediaController = new MediaController(MainActivity.this);
-                        mediaController.setAnchorView(videoView);
-                        mediaController.setVisibility(View.INVISIBLE);
-
-                        videoView.setMediaController(mediaController);
-
-                        new DownloadVideoTask().execute(url);
                     }
 
                     if (type.equals("resume")) {
@@ -661,6 +681,7 @@ public class MainActivity extends AppCompatActivity {
                         videoView.setVisibility(View.INVISIBLE);
 
                         slideshowpaused = false;
+
                         customTag = intent.getStringExtra("tag");
                         if (customTag.equals("")) {
                             SharedPreferences settings = getSharedPreferences("prefs", MODE_PRIVATE);
@@ -676,5 +697,22 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    public void loadVideo(String url) {
+        MediaController mediaController = new MediaController(MainActivity.this);
+        mediaController.setAnchorView(videoView);
+        mediaController.setVisibility(View.INVISIBLE);
+
+        videoView.setMediaController(mediaController);
+
+        new DownloadVideoTask().execute(url);
+    }
+
+    public void loadImage(String url) {
+        videoView.setVisibility(View.INVISIBLE);
+        Picasso.get().load(url).fit().centerInside().into(imageView);
+        progress.setVisibility(View.INVISIBLE);
+        imageView.setVisibility(View.VISIBLE);
+    }
 
 }
