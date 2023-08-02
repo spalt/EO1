@@ -6,22 +6,22 @@
 
 ### Requirements 
 
-- You need a way to connect a keyboard and mouse to your E01.  I got one of these -- https://www.amazon.com/gp/product/B01C6032G0/ -- and connected my USB keyboard to it, then my USB mouse to the keyboard.
+- You need a way to connect a keyboard and mouse to your EO1.  I got one of these -- https://www.amazon.com/gp/product/B01C6032G0/ -- and connected my USB keyboard to it, then my USB mouse to the keyboard.
 - Flickr API key:  Once you've signed up for [Flickr](https://www.flickr.com), go [here](https://www.flickr.com/services/apps/create/apply/), to create an "app".  Once you walk through the short wizard, your key will look like a series of numbers and letters. You will want the **public key**.
 - Flickr User ID:  Your user ID is in the URL bar when viewing your photos.  For example it is bolded in the following URL:  https://www.flickr.com/photos/ **193118297@N04** / — you only need the User ID, not the entire URL.
-- Upon setting up the app, it'll ask for these two pieces of info.  You can either type them in on the setup dialog, or put them into a file (the User ID, followed by a carriage return, followed by your Public API key).  Name this file **"config.txt"** and copy your to your E01's "Downloads" folder.  (An easy way to do this is to email yourself the file then log into your email and download it using the E01's web browser [described below]).
+- Upon setting up the app, it'll ask for these two pieces of info.  You can either type them in on the setup dialog, or put them into a file (the User ID, followed by a carriage return, followed by your Public API key).  Name this file **"config.txt"** and copy your to your EO1's "Downloads" folder.  (An easy way to do this is to email yourself the file then log into your email and download it using the EO1's web browser [described below]).
 
 ### Setup
 
 - Upload some EO art to your Flickr account.  There's a good collection here:  https://github.com/crushallhumans/eo1-iframe/tree/main/eo1_caches/mp4s -- MP4 videos and still images are supported.
-- Once you boot up your E01 and it hangs on the "Getting Art" dialog, hit **WINDOWS + B** to open a web browser
-- You need to tell your E01 to allow side-loading.  Swipe down on the top right and go to Settings > Security.  In there make sure "Unknown Sources" is checked.
+- Once you boot up your EO1 and it hangs on the "Getting Art" dialog, hit **WINDOWS + B** to open a web browser
+- You need to tell your EO1 to allow side-loading.  Swipe down on the top right and go to Settings > Security.  In there make sure "Unknown Sources" is checked.
 - Go back to the browser and go to this URL: https://github.com/spalt/EO1/releases/download/0.0.4/EO1.apk
 - When it finishes, install the file by pulling down the notification bar and clicking it, then agreeing to the prompts.
-- Restart/power cycle your E01
-- Because this APK is designated as a "Home screen replacement", when it boots, it will ask if you want to load the Electric Object app, or the E01 app.  Select E01 and choose "Always".
-- The first time the E01 is run you will need to specify the information above.  Click OK to save and continue.  **To get back to the configuration screen later, push C on your connected keyboard** 
-- You can now unplug your mouse and keyboard and hang your E01 back on the wall!
+- Restart/power cycle your EO1
+- Because this APK is designated as a "Home screen replacement", when it boots, it will ask if you want to load the Electric Object app, or the EO1 app.  Select EO1 and choose "Always".
+- The first time the EO1 is run you will need to specify the information above.  Click OK to save and continue.  **To get back to the configuration screen later, push C on your connected keyboard** 
+- You can now unplug your mouse and keyboard and hang your EO1 back on the wall!
 
 ### New in 0.0.4
 
