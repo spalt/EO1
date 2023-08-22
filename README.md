@@ -27,6 +27,7 @@
 
 Device app:
 - Checkbox allows you to disable auto-brightness and set it manually
+
 Partner app:
 - Gear icon at top right lets you send new values for brightness, start/end quiet hour, and slideshow interval direct to the device (see 0.0.3 for instructions on installing the partner app)
 
@@ -36,6 +37,7 @@ Device app:
 - Fixes quiet hours after midnight
 - Fixes image and video pushing via partner app when original resolution is not available
 - Better handling of bad/no network scenarios
+
 Partner app:
 - Handles intents from Flickr app in a better way (you must upgrade the partner app if you update to 0.0.4 on the device)
 
