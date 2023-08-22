@@ -88,6 +88,23 @@ public class MyMessageService extends Service {
                         intent.putExtra("tag", message.replace("tag,",""));
                     }
 
+                    if (message.startsWith("brightness")) {
+                        intent.putExtra("type", "brightness");
+                        intent.putExtra("level", Float.parseFloat(message.replace("brightness,","")));
+                    }
+
+                    if (message.startsWith("options")) {
+                        intent.putExtra("type", "options");
+
+                        String opts[] = message.replace("options,","").split(",");
+
+                        intent.putExtra("brightness", Float.parseFloat(opts[0]));
+                        intent.putExtra("interval", Integer.parseInt(opts[1]));
+                        intent.putExtra("startQuietHour", Integer.parseInt(opts[2]));
+                        intent.putExtra("endQuietHour", Integer.parseInt(opts[3]));
+
+                    }
+
                     LocalBroadcastManager.getInstance(MyMessageService.this).sendBroadcast(intent);
                 }
             });

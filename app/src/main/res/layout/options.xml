@@ -123,4 +123,27 @@
         android:inputType="number"
         android:hint="5" />
 
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Brightness:"
+        android:layout_marginTop="20sp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+    <CheckBox
+        android:id="@+id/cbBrightnessAuto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Auto brightness" />
+
+    <SeekBar
+        android:id="@+id/sbBrightness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="10"
+        android:progress="0" />
+
+
 </LinearLayout>
