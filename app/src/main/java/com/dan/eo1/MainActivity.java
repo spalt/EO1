@@ -23,12 +23,15 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -86,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean slideshowpaused = false;
     private ProgressBar progress;
     boolean screenon = true;
+    boolean autobrightness = true;
+    float brightnesslevel = 0.5f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +112,8 @@ public class MainActivity extends AppCompatActivity {
         endQuietHour = settings.getInt("endQuietHour", -1);
         customTag = settings.getString("customTag", "");
         interval = settings.getInt("interval", 5);
+        autobrightness = settings.getBoolean("autobrightness", true);
+        brightnesslevel = settings.getFloat("brightnesslevel", 0.5f);
 
         if (displayOption != 2) customTag = "";
 
@@ -131,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
             public void onAccuracyChanged(Sensor sensor, int i) {
             }
         };
-        Log.e("hi", "registered light sensor");
         mSensorManager.registerListener(listener, mLightSensor, SensorManager.SENSOR_DELAY_UI);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, new IntentFilter("MSG_RECEIVED"));
@@ -200,11 +206,17 @@ public class MainActivity extends AppCompatActivity {
         final Button btnLoadConfig = customLayout.findViewById(R.id.btnLoadConfig);
         final EditText editTextCustomTag = customLayout.findViewById(R.id.editTextCustomTag);
         final EditText editTextInterval = customLayout.findViewById(R.id.editTextInterval);
+        final CheckBox cbAutoBrightness = customLayout.findViewById(R.id.cbBrightnessAuto);
+        final SeekBar sbBrightness = customLayout.findViewById(R.id.sbBrightness);
 
         userIdEditText.setText(userid);
         apiKeyEditText.setText(apikey);
         editTextCustomTag.setText(customTag);
         editTextInterval.setText(String.valueOf(interval));
+        if (autobrightness) {
+            cbAutoBrightness.setChecked(true);
+            sbBrightness.setVisibility(View.GONE);
+        }
 
         RadioGroup optionsRadioGroup = customLayout.findViewById(R.id.optionsRadioGroup);
         optionsRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -217,6 +229,34 @@ public class MainActivity extends AppCompatActivity {
                     editTextCustomTag.setVisibility(View.GONE);
                     customTag = ""; // Clear the customTag when not applicable
                 }
+            }
+        });
+
+        sbBrightness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                brightnesslevel = i / 10f;
+                WindowManager.LayoutParams params = getWindow().getAttributes();
+                params.screenBrightness = brightnesslevel;
+                getWindow().setAttributes(params);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+        sbBrightness.setProgress((int) (brightnesslevel * 10));
+
+        cbAutoBrightness.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                autobrightness = b;
+                if (b)
+                    sbBrightness.setVisibility(View.GONE);
+                else
+                    sbBrightness.setVisibility(View.VISIBLE);
             }
         });
 
@@ -280,6 +320,7 @@ public class MainActivity extends AppCompatActivity {
                         endQuietHour = Integer.parseInt(endHourSpinner.getSelectedItem().toString());
                         customTag = editTextCustomTag.getText().toString().trim();
                         interval = Integer.parseInt(editTextInterval.getText().toString().trim());
+                        autobrightness = cbAutoBrightness.isChecked();
 
                         if (!userid.isEmpty() && !apikey.isEmpty()) {
                             SharedPreferences settings = getSharedPreferences("prefs", MODE_PRIVATE);
@@ -291,6 +332,8 @@ public class MainActivity extends AppCompatActivity {
                             editor.putInt("endQuietHour", endQuietHour);
                             editor.putString("customTag", customTag);
                             editor.putInt("interval", interval);
+                            editor.putBoolean("autobrightness", autobrightness);
+                            editor.putFloat("brightnesslevel", brightnesslevel);
                             editor.apply();
 
                             Toast.makeText(MainActivity.this, "Saved!  Hit 'C' to come back here later.", Toast.LENGTH_SHORT).show();
@@ -425,9 +468,9 @@ public class MainActivity extends AppCompatActivity {
             Call<FlickrApiResponse> call;
 
             if (displayOption == 0)
-                call = apiService.getPublicPhotos(apikey, userid, per_page, "media,url_o");
+                call = apiService.getPublicPhotos(apikey, userid, per_page, "media,url_o,original_format");
             else
-                call = apiService.searchPhotos(apikey, "", per_page, (customTag.equals("") ? "electricobjectslives": customTag), "media,url_o");
+                call = apiService.searchPhotos(apikey, "", per_page, (customTag.equals("") ? "electricobjectslives": customTag), "media,url_o,original_format");
             call.enqueue(new Callback<FlickrApiResponse>() {
                 @Override
                 public void onResponse(Call<FlickrApiResponse> call, Response<FlickrApiResponse> response) {
@@ -478,21 +521,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void adjustScreenBrightness(float lightValue){
-        if (!isInQuietHours) {
-            // Determine the desired brightness range
-            float maxBrightness = 1.0f; // Maximum brightness value (0 to 1)
-            float minBrightness = 0.0f; // Minimum brightness value (0 to 1)
+        if (autobrightness) {
+            if (!isInQuietHours) {
+                // Determine the desired brightness range
+                float maxBrightness = 1.0f; // Maximum brightness value (0 to 1)
+                float minBrightness = 0.0f; // Minimum brightness value (0 to 1)
 
-            // Map the light sensor value (0 to 25) to the desired brightness range (0 to 1)
-            float brightness = (lightValue / 35.0f) * (maxBrightness - minBrightness) + minBrightness;
+                // Map the light sensor value (0 to 25) to the desired brightness range (0 to 1)
+                float brightness = (lightValue / 30f) * (maxBrightness - minBrightness) + minBrightness;
 
-            // Make sure brightness is within the valid range
-            brightness = Math.min(Math.max(brightness, minBrightness), maxBrightness);
+                // Make sure brightness is within the valid range
+                brightness = Math.min(Math.max(brightness, minBrightness), maxBrightness);
 
-            // Apply the brightness setting to the screen
-            WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-            layoutParams.screenBrightness = brightness;
-            getWindow().setAttributes(layoutParams);
+                // Apply the brightness setting to the screen
+                WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+                layoutParams.screenBrightness = brightness;
+                getWindow().setAttributes(layoutParams);
+            }
         }
         lastLightLevel = lightValue;
     }
@@ -587,25 +632,61 @@ public class MainActivity extends AppCompatActivity {
 
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent) {
+         public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction() != null) {
                 if (intent.getAction().equals("MSG_RECEIVED")) {
                     String type = intent.getStringExtra("type");
 
-                    progress.setVisibility(View.VISIBLE);
-                    imageView.setVisibility(View.INVISIBLE);
-                    videoView.setVisibility(View.INVISIBLE);
+                    if (type.equals("options")) {
+                        Toast.makeText(MainActivity.this, "Options received   level=" + intent.getFloatExtra("brightness", 1f), Toast.LENGTH_LONG).show();
 
-                    slideshowpaused = true;
-
-                    if (isInQuietHours) {
-                        isInQuietHours = false;
                         WindowManager.LayoutParams params = getWindow().getAttributes();
-                        params.screenBrightness = 1f;
-                        getWindow().setAttributes(params);
+                        float incomingbrightness = intent.getFloatExtra("brightness", 1f);
+                        if (incomingbrightness == -1.0f) {
+                            autobrightness = true;
+                            adjustScreenBrightness(lastLightLevel);
+                        } else {
+                            autobrightness = false;
+                            brightnesslevel = incomingbrightness;
+                            params.screenBrightness = incomingbrightness;
+                            getWindow().setAttributes(params);
+                        }
+
+                        int incominginterval = intent.getIntExtra("interval", 5);
+                        int incomingStartQuietHour = intent.getIntExtra("startQuietHour", -1);
+                        int incomingEndQuietHour = intent.getIntExtra("endQuietHour", -1);
+
+                        SharedPreferences settings = getSharedPreferences("prefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putBoolean("autobrightness", autobrightness);
+                        editor.putFloat("brightnesslevel", incomingbrightness);
+                        editor.putInt("interval", incominginterval);
+                        editor.putInt("startQuietHour", incomingStartQuietHour);
+                        editor.putInt("startQuietHour", incomingEndQuietHour);
+                        editor.apply();
+
+                        if (incominginterval != interval || incomingStartQuietHour != startQuietHour || incomingEndQuietHour != endQuietHour) {
+                            interval = incominginterval;
+                            startQuietHour = incomingStartQuietHour;
+                            endQuietHour = incomingEndQuietHour;
+                            loadImagesFromFlickr();
+                        }
                     }
 
                     if (type.equals("image") || type.equals("video")) {
+                        progress.setVisibility(View.VISIBLE);
+                        imageView.setVisibility(View.INVISIBLE);
+                        videoView.setVisibility(View.INVISIBLE);
+
+                        slideshowpaused = true;
+
+                        if (isInQuietHours) {
+                            isInQuietHours = false;
+                            WindowManager.LayoutParams params = getWindow().getAttributes();
+                            params.screenBrightness = 1f;
+                            getWindow().setAttributes(params);
+                        }
+
                         Retrofit retrofit = new Retrofit.Builder()
                                     .baseUrl("https://api.flickr.com/services/rest/")
                                     .addConverterFactory(GsonConverterFactory.create())
@@ -680,8 +761,6 @@ public class MainActivity extends AppCompatActivity {
                         imageView.setVisibility(View.INVISIBLE);
                         videoView.setVisibility(View.INVISIBLE);
 
-                        slideshowpaused = false;
-
                         customTag = intent.getStringExtra("tag");
                         if (customTag.equals("")) {
                             SharedPreferences settings = getSharedPreferences("prefs", MODE_PRIVATE);
@@ -690,6 +769,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             displayOption = 2;
                         }
+                        slideshowpaused = false;
                         loadImagesFromFlickr();
                     }
 
