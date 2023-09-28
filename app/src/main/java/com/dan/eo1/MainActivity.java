@@ -683,7 +683,7 @@ public class MainActivity extends AppCompatActivity {
                         if (isInQuietHours) {
                             isInQuietHours = false;
                             WindowManager.LayoutParams params = getWindow().getAttributes();
-                            params.screenBrightness = 1f;
+                            params.screenBrightness = brightnesslevel;
                             getWindow().setAttributes(params);
                         }
 
