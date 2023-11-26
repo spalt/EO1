@@ -28,7 +28,7 @@
 Device app:
 - Fixes brightness being reset upon coming back from quiet hours
   
-Parther app:
+Partner app:
 - No changes
  
 ### New in 0.0.5
