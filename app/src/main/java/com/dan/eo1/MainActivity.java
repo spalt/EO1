@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
     private SensorManager mSensorManager;
     private Sensor mLightSensor;
     private float lastLightLevel;
-    private int currentScreenBrightness;
     private boolean slideshowpaused = false;
     private ProgressBar progress;
     boolean screenon = true;
@@ -104,18 +103,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        SharedPreferences settings = getSharedPreferences("prefs", MODE_PRIVATE);
-        userid = settings.getString("userid", "");
-        apikey = settings.getString("apikey", "");
-        displayOption = settings.getInt("displayOption", 0);
-        startQuietHour = settings.getInt("startQuietHour", -1);
-        endQuietHour = settings.getInt("endQuietHour", -1);
-        customTag = settings.getString("customTag", "");
-        interval = settings.getInt("interval", 5);
-        autobrightness = settings.getBoolean("autobrightness", true);
-        brightnesslevel = settings.getFloat("brightnesslevel", 0.5f);
-
-        if (displayOption != 2) customTag = "";
+        loadsettings();
 
         if (userid.isEmpty() || apikey.isEmpty()) {
             showSetupDialog();
@@ -141,11 +129,43 @@ public class MainActivity extends AppCompatActivity {
         mSensorManager.registerListener(listener, mLightSensor, SensorManager.SENSOR_DELAY_UI);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, new IntentFilter("MSG_RECEIVED"));
+
+        Calendar calendar = Calendar.getInstance();
+        int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int normalizedStart = (startQuietHour + 24) % 24;
+        int normalizedEnd = (endQuietHour + 24) % 24;
+        if ((currentHour >= normalizedStart && currentHour < normalizedEnd) ||
+                (normalizedStart > normalizedEnd && (currentHour >= normalizedStart || currentHour < normalizedEnd))) {
+            isInQuietHours = true;
+            WindowManager.LayoutParams params = getWindow().getAttributes();
+            params.screenBrightness = 0;
+            getWindow().setAttributes(params);
+            videoView.setVisibility(View.GONE);
+            imageView.setVisibility(View.GONE);
+        } else {
+            isInQuietHours = false;
+        }
+    }
+
+    void loadsettings() {
+        SharedPreferences settings = getSharedPreferences("prefs", MODE_PRIVATE);
+        userid = settings.getString("userid", "");
+        apikey = settings.getString("apikey", "");
+        displayOption = settings.getInt("displayOption", 0);
+        startQuietHour = settings.getInt("startQuietHour", -1);
+        endQuietHour = settings.getInt("endQuietHour", -1);
+        customTag = settings.getString("customTag", "");
+        interval = settings.getInt("interval", 5);
+        autobrightness = settings.getBoolean("autobrightness", true);
+        brightnesslevel = settings.getFloat("brightnesslevel", 0.5f);
+        if (displayOption != 2) customTag = "";
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        loadsettings();
 
         if (!userid.isEmpty() && !apikey.isEmpty()) {
             loadImagesFromFlickr();
@@ -163,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_C) {
             showSetupDialog();
-            return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_A) {
@@ -178,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
             showNextImage();
         }
 
-        if (keyCode == 132) {
+        if (keyCode == 132 || keyCode == 134) {
             //top button pushed
             WindowManager.LayoutParams params = getWindow().getAttributes();
             if (screenon) {
@@ -227,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                     editTextCustomTag.setText(customTag);
                 } else {
                     editTextCustomTag.setVisibility(View.GONE);
-                    customTag = ""; // Clear the customTag when not applicable
+                    editTextCustomTag.setText("");
                 }
             }
         });
@@ -527,7 +546,7 @@ public class MainActivity extends AppCompatActivity {
                 float maxBrightness = 1.0f; // Maximum brightness value (0 to 1)
                 float minBrightness = 0.0f; // Minimum brightness value (0 to 1)
 
-                // Map the light sensor value (0 to 25) to the desired brightness range (0 to 1)
+                // Map the light sensor value (0 to 30) to the desired brightness range (0 to 1)
                 float brightness = (lightValue / 30f) * (maxBrightness - minBrightness) + minBrightness;
 
                 // Make sure brightness is within the valid range
