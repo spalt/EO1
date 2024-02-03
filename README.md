@@ -23,6 +23,10 @@
 - The first time the EO1 is run you will need to specify the information above.  Click OK to save and continue.  **To get back to the configuration screen later, push C on your connected keyboard** 
 - You can now unplug your mouse and keyboard and hang your EO1 back on the wall!
 
+### New in 0.0.7
+Device app:
+- Fixes the custom tag and other settings ocassionally losing values, especially when coming back from quiet hours.
+
 ### New in 0.0.6
 
 Device app:
