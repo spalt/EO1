@@ -12,7 +12,8 @@ public interface FlickrApiService {
             @Query("text") String searchText,
             @Query("per_page") int perPage,
             @Query("tags") String tags,
-            @Query("extras") String extras
+            @Query("extras") String extras,
+            @Query("page") int page
     );
 
     @GET("?method=flickr.people.getPublicPhotos&format=json&nojsoncallback=1")
@@ -20,7 +21,8 @@ public interface FlickrApiService {
             @Query("api_key") String apiKey,
             @Query("user_id") String userId,
             @Query("per_page") int perPage,
-            @Query("extras") String extras
+            @Query("extras") String extras,
+            @Query("page") int page
     );
 
     @GET("?method=flickr.photos.getInfo&format=json&nojsoncallback=1")

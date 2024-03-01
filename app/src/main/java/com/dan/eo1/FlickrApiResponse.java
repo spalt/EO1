@@ -6,7 +6,6 @@ import java.util.List;
 public class FlickrApiResponse {
     @SerializedName("photos")
     private FlickrPhotos photos;
-
     public FlickrPhotos getPhotos() {
         return photos;
     }
@@ -26,9 +25,13 @@ class FlickrPhotos {
     @SerializedName("photo")
     private List<FlickrPhoto> photoList;
 
+    private String pages;
+
     public List<FlickrPhoto> getPhotoList() {
         return photoList;
     }
+
+    public String getPages() { return pages; }
 }
 
 class FlickrPhoto {

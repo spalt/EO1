@@ -23,11 +23,8 @@ public class MyMessageService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Setup your server socket here
         try {
-            int port = 12345; // Replace with the desired port number
-            Log.e("hi", "oncreate socket");
-
+            int port = 12345;
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,13 +41,11 @@ public class MyMessageService extends Service {
     }
 
     private void startSocketListener() {
-        // Create and start the background thread for listening to incoming messages
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     while (isRunning) {
-                        Log.e("hi", ">"+isRunning);
                         Socket clientSocket = serverSocket.accept();
                         handleIncomingMessage(clientSocket);
                     }
