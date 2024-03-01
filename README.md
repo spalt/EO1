@@ -62,7 +62,7 @@ Device app:
 Partner app:
 - Handles intents from Flickr app in a better way (you must upgrade the partner app if you update to 0.0.4 on the device)
 
-### Partner APp
+### Partner App
 
 - A "Partner App" (for Android) runs on your phone or mobile device and allows you to push images or video directly from the <A href="https://play.google.com/store/apps/details?id=com.flickr.android&hl=en_US&gl=US">Flickr Android App</a> using the share icon, assuming you are running on the same network as your EO1 device.  Running the Partner App from the Start menu of your phone allows you to skip to the next item in the current slideshow or resume the slideshow after sharing an individual item.  You can also update the current Tag (original Tag will be restored next time the device restarts), adjust brightness and change your slideshow interval.
 - To install, you must allow "Unknown Sources" on your device.
