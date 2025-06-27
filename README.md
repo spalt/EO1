@@ -6,6 +6,8 @@
 
 ### Requirements 
 
+*UPDATE: In 2025, Flickr has stopped allowing free accounts to create API apps.  I am currently revisiting this project in an attempt to get it up and running using a different service*
+
 - You need a way to connect a keyboard and mouse to your EO1.  I got one of these -- https://www.amazon.com/gp/product/B01C6032G0/ -- and connected my USB keyboard to it, then my USB mouse to the keyboard.
 - Flickr API key:  Once you've signed up for [Flickr](https://www.flickr.com), go [here](https://www.flickr.com/services/apps/create/apply/), to create an "app".  Once you walk through the short wizard, your key will look like a series of numbers and letters. You will want the **public key**.
 - Flickr User ID:  Your user ID is in the URL bar when viewing your photos.  For example it is bolded in the following URL:  https://www.flickr.com/photos/ **193118297@N04** / — you only need the User ID, not the entire URL.  If you have a custom name in your URL there are other methods to get the userID, described [here](https://www.flickr.com/help/forum/en-us/72157632667188299/).
