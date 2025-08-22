@@ -433,41 +433,67 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 String mediatype = flickrPhotos.get(currentPosition).getMedia();
+                String id = flickrPhotos.get(currentPosition).getId();
 
-                if (!mediatype.equals("video")) {
-                    videoView.setVisibility(View.INVISIBLE);
-                    imageView.setVisibility(View.VISIBLE);
-
-                    if (flickrPhotos.get(currentPosition).getUrlO() == null) {
-                        currentPosition++;
-
-                        showNextImage();
-                        return;
-                    } else {
-                        String imageUrl = flickrPhotos.get(currentPosition).getUrlO().toString().replace("_o", "_k");
-                        Picasso.get().load(imageUrl).fit().centerInside().into(imageView); //Picasso.get().load(imageUrl).fit().centerCrop().into(imageView);
-                        progress.setVisibility(View.INVISIBLE);
-
-                        currentPosition++;
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("https://api.flickr.com/services/rest/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .client(new okhttp3.OkHttpClient())
+                        .build();
+                FlickrApiService apiService = retrofit.create(FlickrApiService.class);
+                Call<FlickrGetSizesResponse> call = apiService.getSizes(apikey, id);
+                call.enqueue(new Callback<FlickrGetSizesResponse>() {
+                    @Override
+                    public void onResponse(Call<FlickrGetSizesResponse> call, Response<FlickrGetSizesResponse> response) {
+                        if (response.isSuccessful()) {
+                            FlickrGetSizesResponse flickrSizesResponse = response.body();
+                            if (flickrSizesResponse != null) {
+                                List<FlickrGetSizesResponse.FlickrImageSize> imageSizes = flickrSizesResponse.getSizes().getImageSizes();
+                                for (FlickrGetSizesResponse.FlickrImageSize size : imageSizes) {
+                                    String label = size.getLabel();
+                                    String imageUrl = size.getSourceUrl();
+                                    if (mediatype.equals("image") && label.equals("Original")) {
+                                        loadImage(imageUrl);
+                                        return;
+                                    }
+                                    if (mediatype.equals("video") && label.equals("720p")) {
+                                        loadVideo(imageUrl, id);
+                                        return;
+                                    }
+                                }
+                                //couldn't find 720p, get 360p
+                                for (FlickrGetSizesResponse.FlickrImageSize size : imageSizes) {
+                                    String label = size.getLabel();
+                                    if (mediatype.equals("video") && label.equals("360p")) {
+                                        loadVideo(size.getSourceUrl(), id);
+                                        return;
+                                    }
+                                }
+                                //couldn't find original image, find Large or Large 1600
+                                if (mediatype.equals("image")) {
+                                    for (int i= imageSizes.size() - 1; i >= 0; i--) {
+                                        String label = imageSizes.get(i).getLabel();
+                                        if (label.equals("Large") || label.equals("Large 1600")) {
+                                            loadImage(imageSizes.get(i).getSourceUrl());
+                                            return;
+                                        }
+                                    }
+                                }
+                                Toast.makeText(MainActivity.this, "No source found.", Toast.LENGTH_SHORT).show();
+                                slideshowpaused = false;
+                                showNextImage();
+                            }
+                        }
                     }
 
-                } else {
-                    imageView.setVisibility(View.INVISIBLE);
+                    @Override
+                    public void onFailure(Call<FlickrGetSizesResponse> call, Throwable t) {
+                        Toast.makeText(MainActivity.this, "Flickr failure", Toast.LENGTH_SHORT).show();
+                        slideshowpaused = false;
+                        showNextImage();
+                    }
+                });
 
-                    MediaController mediaController = new MediaController(this);
-                    mediaController.setAnchorView(videoView);
-                    mediaController.setVisibility(View.INVISIBLE);
-
-                    videoView.setMediaController(mediaController);
-
-                    String url = "";
-                    if (flickrPhotos.get(currentPosition).getOriginalSecret() == null)
-                        url = "https://www.flickr.com/photos/" + userid + "/" + flickrPhotos.get(currentPosition).getId() + "/play/720p/" + flickrPhotos.get(currentPosition).getSecret();
-                    else
-                        url = "https://www.flickr.com/photos/" + userid + "/" + flickrPhotos.get(currentPosition).getId() + "/play/orig/" + flickrPhotos.get(currentPosition).getOriginalSecret();
-
-                    new DownloadVideoTask().execute(url, flickrPhotos.get(currentPosition).getId());
-                }
             } catch (Exception ex) {
                 progress.setVisibility(View.VISIBLE);
                 new android.os.Handler().postDelayed(new Runnable() {
@@ -645,7 +671,7 @@ public class MainActivity extends AppCompatActivity {
 
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
         @Override
-         public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction() != null) {
                 if (intent.getAction().equals("MSG_RECEIVED")) {
                     String type = intent.getStringExtra("type");
