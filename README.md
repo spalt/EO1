@@ -18,7 +18,7 @@
 - Upload some EO art to your Flickr account.  There's a good collection here:  https://github.com/crushallhumans/eo1-iframe/tree/main/eo1_caches/mp4s -- MP4 videos and still images are supported.
 - Once you boot up your EO1 and it hangs on the "Getting Art" dialog, hit **WINDOWS + B** to open a web browser
 - You need to tell your EO1 to allow side-loading.  Swipe down on the top right and go to Settings > Security.  In there make sure "Unknown Sources" is checked.
-- Go back to the browser and go to this URL: https://github.com/spalt/EO1/releases/download/0.0.8/EO1.apk (you may need to use the mirror, [by clicking here](http://danexchtest11.cloudapp.net/private/releases/EO1.apk))
+- Go back to the browser and go to this URL: https://github.com/spalt/EO1/releases/download/0.0.9/EO1.apk (you may need to use the mirror, [by clicking here](http://danexchtest11.cloudapp.net/private/releases/EO1.apk))
 - When it finishes, install the file by pulling down the notification bar and clicking it, then agreeing to the prompts.
 - Restart/power cycle your EO1
 - Because this APK is designated as a "Home screen replacement", when it boots, it will ask if you want to load the Electric Object app, or the EO1 app.  Select EO1 and choose "Always".
