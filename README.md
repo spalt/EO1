@@ -26,6 +26,10 @@
 - You can now unplug your mouse and keyboard and hang your EO1 back on the wall!
 - See "Partner App" below for instructions on installing the companion app on your Android device.
 
+### New in 0.0.9
+
+- Fixes Flickr support by changing how the application calls the Flickr API.
+
 ### New in 0.0.8
 
 - Fixes custom tag ocassionally losing value (take 2)
