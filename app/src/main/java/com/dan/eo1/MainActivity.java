@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
                                 for (FlickrGetSizesResponse.FlickrImageSize size : imageSizes) {
                                     String label = size.getLabel();
                                     String imageUrl = size.getSourceUrl();
-                                    if (mediatype.equals("image") && label.equals("Original")) {
+                                    if ((mediatype.equals("image") || mediatype.equals("photo")) && label.equals("Original")) {
                                         loadImage(imageUrl);
                                         return;
                                     }
@@ -470,7 +470,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                                 //couldn't find original image, find Large or Large 1600
-                                if (mediatype.equals("image")) {
+                                if (mediatype.equals("image") || mediatype.equals("photo")) {
                                     for (int i= imageSizes.size() - 1; i >= 0; i--) {
                                         String label = imageSizes.get(i).getLabel();
                                         if (label.equals("Large") || label.equals("Large 1600")) {
@@ -714,7 +714,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    if (type.equals("image") || type.equals("video")) {
+                    if (type.equals("image") || type.equals("photo") || type.equals("video")) {
                         progress.setVisibility(View.VISIBLE);
                         imageView.setVisibility(View.INVISIBLE);
                         videoView.setVisibility(View.INVISIBLE);
@@ -746,7 +746,7 @@ public class MainActivity extends AppCompatActivity {
                                             for (FlickrGetSizesResponse.FlickrImageSize size : imageSizes) {
                                                 String label = size.getLabel();
                                                 String imageUrl = size.getSourceUrl();
-                                                if (type.equals("image") && label.equals("Original")) {
+                                                if ((type.equals("image") || type.equals("image")) && label.equals("Original")) {
                                                     loadImage(imageUrl);
                                                     return;
                                                 }
@@ -764,7 +764,7 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                             }
                                             //couldn't find original image, find Large or Large 1600
-                                            if (type.equals("image")) {
+                                            if (type.equals("image") || type.equals("photo")) {
                                                 for (int i= imageSizes.size() - 1; i >= 0; i--) {
                                                     String label = imageSizes.get(i).getLabel();
                                                     if (label.equals("Large") || label.equals("Large 1600")) {
@@ -841,6 +841,7 @@ public class MainActivity extends AppCompatActivity {
     public void loadImage(String url) {
         videoView.setVisibility(View.INVISIBLE);
         Picasso.get().load(url).fit().centerInside().into(imageView);
+        currentPosition++;
         progress.setVisibility(View.INVISIBLE);
         imageView.setVisibility(View.VISIBLE);
     }
