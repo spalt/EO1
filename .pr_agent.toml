@@ -1,0 +1,11 @@
+[ignore]
+# fnmatch globs matched against the whole path (file_filter.py:81 uses re.match on
+# fnmatch.translate output), so a bare "EO2/data/backup" would not match anything.
+glob = [
+    "vendor/**",
+    "EO2/data/backup/**",
+    "**/*.tap",
+    "**/*-journal",
+    "**/*.h264",
+    "**/*.hcd",
+]
